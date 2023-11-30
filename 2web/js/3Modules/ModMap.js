@@ -47,6 +47,10 @@ class LeafletMapObject {
         }).addTo(this.map)
 
         this.addMapControl()
+        var point = turf.point([-85.13907697741708, 41.11536086134376]);              
+        var buffered = turf.buffer(point, 50, {units: 'meters'});
+        var buffer = L.geoJSON(buffered);
+        buffer.addTo(this.map); 
         
         //Zoom Function for this.map
         this.map.on('zoomend', () =>{
@@ -128,6 +132,45 @@ class LeafletMapObject {
             rmText: '<i class="trash-icon" aria-hidden="true"  title="Remove tiles"></i>',
         })
         control.addTo(this.map)
-    }  
+    }
+
+    addDrawingTools(){
+        // Add drawing tools to the map
+        const drawnItems = L.featureGroup().addTo(this.map)
+
+        L.control.layers({}, {'drawlayer': drawnItems}, {position: 'topleft', collapsed: false}).addTo(this.map)
+
+        this.map.addControl( new L.Control.Draw({
+            edit: {
+                featureGroup: drawnItems,
+                poly: {
+                    allowIntersection: false,
+
+                },
+            },
+            draw: {
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true,
+                    shapeOptions: {
+                        color: 'red'
+                    }
+                },
+            }
+        }));
+
+        this.map.on(L.Draw.Event.CREATED, (event) => {
+            const layer = event.layer
+            let color = prompt("Enter the color for the shape:")
+            if (color) {
+                layer.setStyle({
+                    color: color
+                });
+            }
+            drawnItems.addLayer(layer)
+        })
+
+        
+    }
 }
 
